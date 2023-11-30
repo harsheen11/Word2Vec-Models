@@ -1,6 +1,8 @@
 import csv
 import gensim.downloader
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
 
 with open('synonym.txt', 'r') as file:
@@ -70,5 +72,40 @@ for model_index in range(len(model_name)):
         writer.writerow([model_name[model_index], len(model.key_to_index), correct_count, without_guess_count, accuracy])
 
     print(f"{model_name[model_index]}-details.csv made")
+
+analysis_data = pd.read_csv('analysis.csv', names=['Model', 'Len Key To Index', 'Correct', 'No Guess', 'Accuracy'])
+models = analysis_data['Model']
+correct_val = analysis_data['Correct']
+no_guess_val = analysis_data['No Guess']
+accuracy_val = analysis_data['Accuracy']
+fig, ax1 = plt.subplots(figsize=(16, 8))
+bar_width = 0.25
+index = range(len(models))
+
+bar1 = ax1.bar(index, correct_val, bar_width, label='Correct', color='skyblue')
+ax1.set_xlabel('Model')
+ax1.set_ylabel('Correct', color='black')
+ax1.set_title('Analysis of Models')
+for i, value in enumerate(correct_val):
+    ax1.text(i, value + 0.1, str(value), ha='center', va='bottom')
+
+ax2 = ax1.twinx()
+ax2.set_ylabel('No Guess', color='black')
+bar2 = ax2.bar([i + bar_width for i in index], no_guess_val, bar_width, label='No Guess', color='lightcoral')
+for i, value in enumerate(no_guess_val):
+    ax2.text(i + bar_width, value + 0.1, str(value), ha='center', va='bottom')
+
+ax3 = ax1.twinx()
+ax3.set_ylabel('Accuracy', color='black')
+ax3.spines['right'].set_position(('outward', 60))
+bar3 = ax3.bar([i + 2 * bar_width for i in index], accuracy_val, bar_width, label='Accuracy', color='lightgreen')
+for i, value in enumerate(accuracy_val):
+    ax3.text(i + 2 * bar_width, value + 0.01, f'{value:.2f}', ha='center', va='bottom')
+
+ax1.legend(loc='upper right', bbox_to_anchor=(0.1, 1.1))
+ax2.legend(loc='upper right', bbox_to_anchor=(0.2, 1.1))
+ax3.legend(loc='upper right', bbox_to_anchor=(0.3, 1.1))
+
+plt.savefig('analysis_of_models.png', dpi=300)
 
 print("Program complete")
