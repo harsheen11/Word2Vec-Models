@@ -7,8 +7,9 @@ import gensim
 import gensim.downloader
 import nltk
 from nltk import RegexpTokenizer
-from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
+
+nltk.download('stopwords')  # Comment this line if errors occur
 
 with open('synonym.txt', 'r') as file:
     lines = file.readlines()
@@ -25,14 +26,68 @@ for i in range(0, len(lines), 6):
     correct_answers.append(correct_answer)
     options.append(choices)
 
+w1 = 5
+w2 = 10
+e5 = 100
+e6 = 200
+
 model_name = ['word2vec-google-news-300', 'glove-wiki-gigaword-200', 'glove-twitter-200', 'glove-wiki-gigaword-100',
-              'glove-wiki-gigaword-300']
+              'glove-wiki-gigaword-300', f'aav-squad_{e5}_{w1}', f'aav-squad_{e5}_{w2}', f'aav-squad_{e6}_{w1}',
+              f'aav-squad_{e6}_{w2}']
+
+processed_text = []
+
+def preprocess_text(text):
+    stopword = stopwords.words('english')
+    prepro_text = ' '.join([word for word in text.split() if word not in stopword])
+    tokens = nltk.sent_tokenize(prepro_text)
+    for token in tokens:
+        tokenizer = RegexpTokenizer(r'\w+')
+        word_tokens = tokenizer.tokenize(token)
+        processed_text.append(word_tokens)
+    return processed_text
+
+def read_text_from_txt(txt_path):
+    with open(txt_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+    return text
+
+book_paths = ['book1.txt', 'book2.txt', 'book3.txt', 'book4.txt', 'book5.txt', 'book6.txt', 'book7.txt', 'book8.txt',
+              'book9.txt', 'book10.txt', 'book11.txt', 'book12.txt', 'book13.txt', 'book14.txt', 'book15.txt', 'book16.txt']
+
+for i, book_path in enumerate(book_paths):
+    book_text = read_text_from_txt(book_path)
+    preprocessed_book = preprocess_text(book_text)
+
+def construct_model(embeddingSize, windowSize, string):
+    model = gensim.models.Word2Vec(window=windowSize, vector_size=embeddingSize)
+    model.build_vocab(processed_text)
+    modelName = "{}.model".format(string)
+    model.train(processed_text, total_examples=model.corpus_count, epochs=15)
+    model.save(modelName)
+    return model
 
 with open('analysis.csv', 'w', newline='') as analysis_file:
     pass
 
 for model_index in range(len(model_name)):
-    model = gensim.downloader.load(model_name[model_index])
+    if 'aav-squad' in model_name[model_index]:
+        use_aav_model = 1
+        _, e_val, w_val = model_name[model_index].split('_')
+        if e_val == str(e5) and w_val == str(w1):
+            model = construct_model(e5, w1, model_name[model_index])
+        elif e_val == str(e5) and w_val == str(w2):
+            model = construct_model(e5, w2, model_name[model_index])
+        elif e_val == str(e6) and w_val == str(w1):
+            model = construct_model(e6, w1, model_name[model_index])
+        elif e_val == str(e6) and w_val == str(w2):
+            model = construct_model(e6, w2, model_name[model_index])
+        else:
+            continue
+    else:
+        use_aav_model = 0
+        model = gensim.downloader.load(model_name[model_index])
+
     results = []
     correct_count = 0
     without_guess_count = 0
@@ -42,9 +97,11 @@ for model_index in range(len(model_name)):
         correct_answer = correct_answers[i]
         choices = options[i]
 
-        if all(word in model.key_to_index for word in [question] + choices):
-            question_vec = np.array([model[question]])
-            choice_vecs = np.array([model[word] for word in choices])
+        key_to_index = model.wv.key_to_index if use_aav_model == 1 else model.key_to_index
+
+        if all(word in key_to_index for word in [question] + choices):
+            question_vec = np.array([model.wv[question]]) if use_aav_model == 1 else np.array([model[question]])
+            choice_vecs = np.array([model.wv[word] for word in choices]) if use_aav_model == 1 else np.array([model[word] for word in choices])
             similarities = cosine_similarity(question_vec, choice_vecs)[0]
             predicted_index = np.argmax(similarities)
 
@@ -75,117 +132,9 @@ for model_index in range(len(model_name)):
 
     with open('analysis.csv', 'a', newline='') as analysis_file:
         writer = csv.writer(analysis_file)
-        writer.writerow(
-            [model_name[model_index], len(model.key_to_index), correct_count, without_guess_count, accuracy])
+        writer.writerow([model_name[model_index], len(key_to_index), correct_count, without_guess_count, accuracy])
 
     print(f"{model_name[model_index]}-details.csv made")
-
-processed_text = []
-
-
-def read_text_from_txt(txt_path):
-    with open(txt_path, 'r', encoding='utf-8') as file:
-        text = file.read()
-    return text
-
-
-def preprocess_text(text):
-    stopword = stopwords.words('english')
-    prepro_text = ' '.join([word for word in text.split() if word not in stopword])
-    tokens = nltk.sent_tokenize(prepro_text)
-    for token in tokens:
-        tokenizer = RegexpTokenizer(r'\w+')
-        word_tokens = tokenizer.tokenize(token)
-        processed_text.append(word_tokens)
-    return processed_text
-
-
-book_paths = ['book1.txt', 'book2.txt', 'book3.txt', 'book4.txt', 'book5.txt', 'book6.txt', 'book7.txt', 'book8.txt',
-              'book9.txt', 'book10.txt', 'book11.txt', 'book12.txt',
-              'book13.txt', 'book14.txt', 'book15.txt', 'book16.txt']
-
-for i, book_path in enumerate(book_paths):
-    # Read text from the TXT file
-    book_text = read_text_from_txt(book_path)
-
-    # Preprocess the text
-    preprocessed_book = preprocess_text(book_text)
-
-
-def construct_model(windowSize, embeddingSize, string):
-    model = gensim.models.Word2Vec(
-        window=windowSize,
-        vector_size=embeddingSize
-    )
-    model.build_vocab(processed_text)
-    modelName = "{}.model".format(string)
-    model.train(processed_text, total_examples=model.corpus_count, epochs=15)
-    model.save(modelName)
-    return model
-
-
-w1 = 5
-w2 = 10
-e5 = 100
-e6 = 200
-model_name_list = ['aav-squad-100-5', 'aav-squad-100-10', 'aav-squad-200-5', 'aav-squad-200-10']
-
-model1 = construct_model(w1, e5, model_name_list[0])
-model2 = construct_model(w2, e5, model_name_list[1])
-model3 = construct_model(w1, e6, model_name_list[2])
-model4 = construct_model(w2, e6, model_name_list[3])
-
-new_model_name = [model1, model2, model3, model4]
-
-for model_index in range(len(new_model_name)):
-    model = new_model_name[model_index]
-
-    results = []
-    correct_count = 0
-    without_guess_count = 0
-
-    for i in range(len(questions)):
-        question = questions[i]
-        correct_answer = correct_answers[i]
-        choices = options[i]
-
-        if all(word in model.wv.key_to_index for word in [question] + choices):
-            question_vec = np.array([model.wv[question]])
-            choice_vecs = np.array([model.wv[word] for word in choices])
-            similarities = cosine_similarity(question_vec, choice_vecs)[0]
-            predicted_index = np.argmax(similarities)
-
-            if 0 <= predicted_index < len(choices):
-                predicted_answer = choices[predicted_index]
-            else:
-                predicted_answer = 'guess'
-
-            if predicted_answer == choices[ord(correct_answer) - ord('a')]:
-                label = 'correct'
-                correct_count += 1
-            else:
-                label = 'wrong'
-
-            without_guess_count += 1
-
-        else:
-            label = 'guess'
-            predicted_answer = 'guess'
-
-        results.append((question, choices[ord(correct_answer) - ord('a')], predicted_answer, label))
-
-    with open(f'{model_name_list[model_index]}-details.csv', 'w', newline='') as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerows(results)
-
-    accuracy = correct_count / without_guess_count if without_guess_count > 0 else 0
-
-    with open('analysis.csv', 'a', newline='') as analysis_file:
-        writer = csv.writer(analysis_file)
-        writer.writerow(
-            [model_name_list[model_index], len(model.wv.key_to_index), correct_count, without_guess_count, accuracy])
-
-    print(f"{model_name_list[model_index]}-details.csv made")
 
 analysis_data = pd.read_csv('analysis.csv', names=['Model', 'Len Key To Index', 'Correct', 'No Guess', 'Accuracy'])
 models = analysis_data['Model']

@@ -25,7 +25,7 @@ often,frequently,guess,guess
 easygoing,relaxed,guess,guess
 debate,argument,argument,correct
 narrow,thin,thin,correct
-arranged,planned,planned,correct
+arranged,planned,discarded,wrong
 infinite,limitless,limitless,correct
 showy,striking,guess,guess
 levied,imposed,imposed,correct
@@ -49,7 +49,7 @@ situated,positioned,guess,guess
 principal,major,numerous,wrong
 slowly,gradually,gradually,correct
 built,constructed,guess,guess
-tasks,jobs,jobs,correct
+tasks,jobs,customers,wrong
 unlikely,improbable,improbable,correct
 halfheartedly,apathetically,guess,guess
 annals,chronicles,guess,guess
@@ -62,7 +62,7 @@ generally,broadly,guess,guess
 sustained,prolonged,prolonged,correct
 perilous,dangerous,exciting,wrong
 tranquillity,peacefulness,guess,guess
-dissipate,disperse,disperse,correct
+dissipate,disperse,isolate,wrong
 primarily,chiefly,consistently,wrong
 colloquial,conversational,guess,guess
 resolved,settled,guess,guess

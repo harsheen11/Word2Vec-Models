@@ -20,7 +20,7 @@ furnish,supply,supply,correct
 costly,expensive,expensive,correct
 recognized,acknowledged,acknowledged,correct
 spot,location,sea,wrong
-make,earn,earn,correct
+make,earn,borrow,wrong
 often,frequently,guess,guess
 easygoing,relaxed,guess,guess
 debate,argument,argument,correct
@@ -36,11 +36,11 @@ prolific,productive,productive,correct
 unmatched,unequaled,guess,guess
 peculiarly,uniquely,guess,guess
 hue,color,glare,wrong
-hind,rear,muscular,wrong
+hind,rear,curved,wrong
 highlight,accentuate,guess,guess
 hastily,hurriedly,guess,guess
 temperate,mild,cold,wrong
-grin,smile,smile,correct
+grin,smile,joke,wrong
 verbally,orally,guess,guess
 physician,doctor,guess,guess
 essentially,basically,guess,guess
@@ -49,7 +49,7 @@ situated,positioned,guess,guess
 principal,major,numerous,wrong
 slowly,gradually,gradually,correct
 built,constructed,guess,guess
-tasks,jobs,jobs,correct
+tasks,jobs,shops,wrong
 unlikely,improbable,improbable,correct
 halfheartedly,apathetically,guess,guess
 annals,chronicles,guess,guess
@@ -60,13 +60,13 @@ concocted,devised,guess,guess
 prospective,potential,guess,guess
 generally,broadly,guess,guess
 sustained,prolonged,prolonged,correct
-perilous,dangerous,dangerous,correct
+perilous,dangerous,exciting,wrong
 tranquillity,peacefulness,guess,guess
 dissipate,disperse,isolate,wrong
 primarily,chiefly,consistently,wrong
 colloquial,conversational,guess,guess
 resolved,settled,guess,guess
-feasible,possible,evident,wrong
+feasible,possible,possible,correct
 expeditiously,rapidly,guess,guess
 percentage,proportion,sample,wrong
 terminated,ended,guess,guess
